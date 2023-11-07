@@ -10,6 +10,17 @@ async def get_contacts(skip: int, limit: int, db: Session) -> List[Contact]:
     return db.query(Contact).offset(skip).limit(limit).all()
 
 
+async def search_contacts(key , db: Session) -> List[Contact]:
+    contacts = db.query(Contact).all()
+
+    matching_contacts = []
+    for contact in contacts:
+        if contact.name == key or contact.surname == key or contact.email == key:
+            matching_contacts.append(contact)
+            
+    return matching_contacts
+
+
 async def get_contact(contact_id: int, db: Session) -> Contact:
     return db.query(Contact).filter(Contact.id == contact_id).first()
 

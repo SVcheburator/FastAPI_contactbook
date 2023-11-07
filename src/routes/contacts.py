@@ -25,6 +25,12 @@ async def read_contact(contact_id: int, db: Session = Depends(get_db)):
     return contact
 
 
+@router.get("/search/", response_model=List[ContactResponse])
+async def search_contacts(search_key: str, db: Session = Depends(get_db)):
+    contacts = await repository_contacts.search_contacts(search_key, db)
+    return contacts
+
+
 @router.post("/", response_model=ContactResponse)
 async def create_contact(body: ContactModel, db: Session = Depends(get_db)):
     return await repository_contacts.create_contact(body, db)
