@@ -50,3 +50,9 @@ async def remove_contact(contact_id: int, db: Session = Depends(get_db)):
     if contact is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
     return contact
+
+
+@router.get("/week_birthdays/", response_model=List[ContactResponse])
+async def get_week_birthdays(db: Session = Depends(get_db)):
+    contacts = await repository_contacts.get_week_birthdays(db)
+    return contacts

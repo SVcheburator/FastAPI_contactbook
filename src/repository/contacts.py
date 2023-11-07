@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 from src.database.models import Contact
 from src.schemas import ContactModel, ContactUpdate
 
+from datetime import datetime, timedelta
+
 
 async def get_contacts(skip: int, limit: int, db: Session) -> List[Contact]:
     return db.query(Contact).offset(skip).limit(limit).all()
@@ -52,3 +54,19 @@ async def update_contact(contact_id: int, body: ContactUpdate, db: Session) -> C
         contact.favourite = body.favourite
         db.commit()
     return contact
+
+
+async def get_week_birthdays(db: Session) -> List[Contact]:
+    contacts = db.query(Contact).all()
+
+    matching_contacts = []
+    for contact in contacts:    
+        bd = datetime(year=datetime.now().year, month=contact.birthday.month, day=contact.birthday.day)
+
+        delta = bd - datetime.now()
+        week_delta = timedelta(days=7)
+
+        if timedelta(days=0) <= delta <= week_delta:
+            matching_contacts.append(contact)
+
+    return matching_contacts
