@@ -1,19 +1,20 @@
 from typing import List
 
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 
-from src.database.models import Contact
+from src.database.models import Contact, User
 from src.schemas import ContactModel, ContactUpdate
 
 from datetime import datetime, timedelta
 
 
-async def get_contacts(skip: int, limit: int, db: Session) -> List[Contact]:
-    return db.query(Contact).offset(skip).limit(limit).all()
+async def get_contacts(skip: int, limit: int, user: User, db: Session) -> List[Contact]:
+    return db.query(Contact).filter(Contact.user_id == user.id).offset(skip).limit(limit).all()
 
 
-async def search_contacts(key , db: Session) -> List[Contact]:
-    contacts = db.query(Contact).all()
+async def search_contacts(key, user: User, db: Session) -> List[Contact]:
+    contacts = db.query(Contact).filter(Contact.user_id == user.id).all()
 
     matching_contacts = []
     for contact in contacts:
@@ -23,28 +24,28 @@ async def search_contacts(key , db: Session) -> List[Contact]:
     return matching_contacts
 
 
-async def get_contact(contact_id: int, db: Session) -> Contact:
-    return db.query(Contact).filter(Contact.id == contact_id).first()
+async def get_contact(contact_id: int, user: User, db: Session) -> Contact:
+    return db.query(Contact).filter(and_(Contact.id == contact_id, Contact.user_id == user.id)).first()
 
 
-async def create_contact(body: ContactModel, db: Session) -> Contact:
-    contact = Contact(name=body.name, surname=body.surname, email=body.email, phone=body.phone, birthday=body.birthday)
+async def create_contact(body: ContactModel, user: User, db: Session) -> Contact:
+    contact = Contact(name=body.name, surname=body.surname, email=body.email, phone=body.phone, birthday=body.birthday, user=user)
     db.add(contact)
     db.commit()
     db.refresh(contact)
     return contact
 
 
-async def remove_contact(contact_id: int, db: Session) -> Contact | None:
-    contact = db.query(Contact).filter(Contact.id == contact_id).first()
+async def remove_contact(contact_id: int, user: User, db: Session) -> Contact | None:
+    contact = db.query(Contact).filter(and_(Contact.id == contact_id, Contact.user_id == user.id)).first()
     if contact:
         db.delete(contact)
         db.commit()
     return contact
 
 
-async def update_contact(contact_id: int, body: ContactUpdate, db: Session) -> Contact | None:
-    contact = db.query(Contact).filter(Contact.id == contact_id).first()
+async def update_contact(contact_id: int, body: ContactUpdate, user: User, db: Session) -> Contact | None:
+    contact = db.query(Contact).filter(and_(Contact.id == contact_id, Contact.user_id == user.id)).first()
     if contact:
         contact.name = body.name
         contact.surname = body.surname
@@ -56,8 +57,8 @@ async def update_contact(contact_id: int, body: ContactUpdate, db: Session) -> C
     return contact
 
 
-async def get_week_birthdays(db: Session) -> List[Contact]:
-    contacts = db.query(Contact).all()
+async def get_week_birthdays(user: User, db: Session) -> List[Contact]:
+    contacts = db.query(Contact).filter(Contact.user_id == user.id).all()
 
     matching_contacts = []
     for contact in contacts:    
