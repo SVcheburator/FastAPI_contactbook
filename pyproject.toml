@@ -20,6 +20,7 @@ fastapi-mail = "^1.4.1"
 redis = "4.2"
 fastapi-limiter = "^0.1.5"
 python-dotenv = "^1.0.0"
+cloudinary = "^1.36.0"
 
 
 [build-system]

@@ -1,14 +1,26 @@
 import redis.asyncio as redis
+
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi_limiter import FastAPILimiter
 
-from src.routes import contacts, auth
+from src.routes import contacts, auth, users
 from src.conf.config import settings
 
 app = FastAPI()
 
 app.include_router(auth.router, prefix='/api')
 app.include_router(contacts.router, prefix='/api')
+app.include_router(users.router, prefix='/api')
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.on_event("startup")
