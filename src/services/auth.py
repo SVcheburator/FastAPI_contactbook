@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from src.database.db import get_db
 from src.repository import users as repository_users
+from src.conf.config import settings
 
 
 class Auth:
@@ -19,7 +20,7 @@ class Auth:
     SECRET_KEY = "secret_key"
     ALGORITHM = "HS256"
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-    r = redis.Redis(host='localhost', port=6379, db=0)
+    r = redis.Redis(host=settings.redis_host, port=settings.redis_port, db=0)
 
     def verify_password(self, plain_password, hashed_password):
         return self.pwd_context.verify(plain_password, hashed_password)
@@ -77,13 +78,11 @@ class Auth:
                 raise credentials_exception
         except JWTError as e:
             raise credentials_exception
-
         user = self.r.get(f"user:{email}")
         if user is None:
             user = await repository_users.get_user_by_email(email, db)
             if user is None:
                 raise credentials_exception
-            
             self.r.set(f"user:{email}", pickle.dumps(user))
             self.r.expire(f"user:{email}", 900)
         else:

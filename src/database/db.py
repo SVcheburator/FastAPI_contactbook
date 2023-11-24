@@ -1,13 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from src.conf.config import settings
 
-# Add your own PostgreSQL database info here:
-db_username = ...
-db_password = ...
-db_name = ...
-
-
-SQLALCHEMY_DATABASE_URL = f"postgresql+psycopg2://{db_username}:{db_password}@localhost:5432/{db_name}"
+SQLALCHEMY_DATABASE_URL = settings.sqlalchemy_database_url
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
